@@ -3,59 +3,87 @@ import shutil
 import os
 from glob import glob
 import json
+import re
 
 
-if __name__ == '__main__':
-    with open('.montreal.json', 'r') as f:
-        config = json.load(f)
+def build(root='./'):
+    config = {'metadata': {}}
+
+    config_path = os.path.join(root, '.ljon/config.json')
+    public_path = os.path.join(root, 'public')
+    templates_path = os.path.join(root, '.ljon/templates')
 
     try:
-        shutil.rmtree('./public')
+        with open(config_path, 'r') as f:
+            config = json.load(f)
+    except FileNotFoundError:
+        raise Exception("No configuration file found.")
+
+    try:
+        shutil.rmtree(public_path)
     except FileNotFoundError:
         pass
 
-    os.makedirs('./public', exist_ok=True)
+    os.makedirs(public_path)
 
-    j2 = Environment(loader=FileSystemLoader(['./.templates', './']))
+    j2 = Environment(loader=FileSystemLoader([root, templates_path]))
 
     content = []
-
     pathname = '*'
 
     while True:
-        files = glob(pathname)
+        files = glob(os.path.join(root, pathname))
 
-        if len(files) == 0:
-            break
+        if len(files) == 0: break
 
         content.extend(files)
-        pathname += '/*'
+        pathname = os.path.join(pathname, '*')
 
-    for f in content:
-        if os.path.isdir(f):
-            continue
+    for path in content:
+        if os.path.isdir(path): continue
 
-        extension = f.split('.', maxsplit=1)[1]
-        path = f
+        extension = path.split('/')[-1].split('.', maxsplit=1)[1]
+        is_template, is_metadata = False, False
+
+        if extension.split('.')[-1] == 'j2':
+            is_template = True
+            real_extension = extension.split('.')[-2]
+
+        if extension.split('.')[-1] == 'json' and \
+            extension.split('.')[-2] == 'j2' and \
+            len(extension.split('.')) >= 3:
+            is_metadata = True
 
         if '/' in path:
             directories = '/'.join(path.split('/')[:-1])
-            os.makedirs('./public/{}'.format(directories), exist_ok=True)
+            os.makedirs(os.path.join(public_path, directories), exist_ok=True)
 
-        if extension == 'j2':
+        if is_template:
             template = j2.get_template(path)
 
-            metadata = config.copy()
+            metadata = config['metadata'].copy()
 
-            if os.path.exists('{}.json'.format(f)):
-                with open('{}.json'.format(f)) as metadata_file:
+            try:
+                with open('{}.json'.format(path)) as metadata_file:
                     metadata.update(json.load(metadata_file))
+            except FileNotFoundError:
+                pass
 
             rendered = template.render(**metadata)
 
-            with open('./public/{}'.format(path.replace('j2', 'html')), 'w') as h:
+            destination_path = '.'.join(path.split('.')[0:-2])
+            destination_path = '{destination}.{ext}'.format(
+                                destination=destination_path,
+                                ext=real_extension)
+            destination_path = os.path.join(public_path, destination_path)
+
+            with open(destination_path, 'w') as h:
                 h.write(rendered)
-        elif extension == 'j2.json':
+        elif is_metadata:
             pass
         else:
-            shutil.copy(f, './public/{}'.format(path))
+            shutil.copy(path, os.path.join(public_path, path))
+
+
+if __name__ == '__main__':
+    build()
