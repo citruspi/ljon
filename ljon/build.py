@@ -17,7 +17,8 @@ def build(root='./'):
         with open(config_path, 'r') as f:
             config = json.load(f)
     except FileNotFoundError:
-        raise Exception("No configuration file found.")
+        raise Exception("No configuration file found at '{}'".format(
+            config_path))
 
     try:
         shutil.rmtree(public_path)
@@ -42,7 +43,10 @@ def build(root='./'):
     for path in content:
         if os.path.isdir(path): continue
 
-        extension = path.split('/')[-1].split('.', maxsplit=1)[1]
+        try:
+            extension = path.split('/')[-1].split('.', maxsplit=1)[1]
+        except IndexError:
+            pass
         is_template, is_metadata = False, False
 
         if extension.split('.')[-1] == 'j2':
