@@ -1,5 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 import json
+import subprocess
 
 
 def jinja(path, intended_path, root, templates_path, config):
@@ -19,3 +20,10 @@ def jinja(path, intended_path, root, templates_path, config):
 
     with open(intended_path, 'w') as h:
         h.write(rendered)
+
+
+def shell(command, path, root, public_path, templates_path, config):
+    command = command.format(path=path, root=root, public_path=public_path,
+                             templates=templates_path, config=config)
+
+    subprocess.run(command.split(' '))

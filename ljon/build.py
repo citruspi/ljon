@@ -76,5 +76,10 @@ def build(root):
                                           root,
                                           templates_path,
                                           config)
+                if config['processors'][pattern]['processor'] == 'shell':
+                    command = config['processors'][pattern]['command']
+
+                    ljon.processors.shell(command, path, root, public_path,
+                                          templates_path, config)
         if not processed:
             shutil.copy(path, os.path.join(public_path, path))
