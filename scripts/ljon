@@ -1,10 +1,13 @@
 #!/usr/bin/env/python
 import os
+from threading import Thread
 
 import click
 
 import ljon.build
 import ljon.server
+import ljon.watch
+
 
 @click.command()
 @click.option('--root', default='.', help='Path to the the project')
@@ -14,12 +17,32 @@ import ljon.server
               help='The host for the HTTP server')
 @click.option('--port', default=5657,
               help='The port for the HTTP server')
-def build(root, server, host, port):
+@click.option('--watch', is_flag=True, help='Watch file system for changes')
+def build(root, server, host, port, watch):
     ljon.build(root)
+
+    public_path = os.path.join(root, 'public')
+
+    if watch:
+        watch_thread = WatchThread(root, public_path)
+        watch_thread.start()
 
     if server:
         server = ljon.server.Server(host, port)
         server.start()
+
+
+class WatchThread(Thread):
+    def __init__(self, root, public_path):
+        self.stopped = False
+        self.root = root
+        self.public_path = public_path
+
+        Thread.__init__(self)
+
+    def run(self):
+        while not self.stopped:
+            ljon.watch.watch(self.root, self.public_path)
 
 
 if __name__ == '__main__':
