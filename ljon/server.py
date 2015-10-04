@@ -9,7 +9,7 @@ class LjonHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 
 class Server(object):
-    def __init__(self, host="0.0.0.0", port=8000):
+    def __init__(self, host, port):
         self.host = host
         self.port = port
 

@@ -1,31 +1,26 @@
 #!/usr/bin/env/python
-
-"""
-usage:
-  ljon (-h | --help)
-  ljon <root> [--server]
-
-options:
-  -h --help         Get help
-  --root=<root>     Path to the project root [default: .]
-  --server          Launch HTTP server
-
-"""
-
 import os
 
-from docopt import docopt
+import click
 
 import ljon.build
 import ljon.server
 
+@click.command()
+@click.option('--root', default='.', help='Path to the the project')
+@click.option('--server', is_flag=True,
+              help='Run an HTTP server for the project')
+@click.option('--host', default='0.0.0.0',
+              help='The host for the HTTP server')
+@click.option('--port', default=5657,
+              help='The port for the HTTP server')
+def build(root, server, host, port):
+    ljon.build(root)
+
+    if server:
+        server = ljon.server.Server(host, port)
+        server.start()
+
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='ljon 0.0.1')
-
-    ljon.build(arguments['<root>'])
-
-    if arguments['--server']:
-        server = ljon.server.Server()
-
-        server.start()
+    build()
