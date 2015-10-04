@@ -7,7 +7,7 @@ import re
 
 
 def build(root):
-    config = {'metadata': {}}
+    config = {'metadata': {}, 'ignore': []}
 
     config_path = os.path.join(root, '.ljon/config.json')
     public_path = os.path.join(root, 'public')
@@ -47,6 +47,15 @@ def build(root):
         pathname = os.path.join(pathname, '*')
 
     for path in content:
+        ignore = False
+
+        for pattern in config['ignore']:
+            if re.match(pattern, path):
+                ignore = True
+                break
+
+        if ignore: continue
+
         if os.path.isdir(path): continue
 
         is_template, is_metadata = False, False
