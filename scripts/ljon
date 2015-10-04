@@ -3,11 +3,12 @@
 """
 usage:
   ljon (-h | --help)
-  ljon <root>
+  ljon <root> [--server]
 
 options:
   -h --help         Get help
   --root=<root>     Path to the project root [default: .]
+  --server          Launch HTTP server
 
 """
 
@@ -16,8 +17,15 @@ import os
 from docopt import docopt
 
 import ljon.build
+import ljon.server
 
 
 if __name__ == '__main__':
     arguments = docopt(__doc__, version='ljon 0.0.1')
+
     ljon.build(arguments['<root>'])
+
+    if arguments['--server']:
+        server = ljon.server.Server()
+
+        server.start()
