@@ -78,7 +78,3 @@ def build(root):
                                           config)
         if not processed:
             shutil.copy(path, os.path.join(public_path, path))
-
-
-if __name__ == '__main__':
-    build()
