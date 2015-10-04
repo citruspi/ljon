@@ -7,25 +7,24 @@ import ljon.build
 
 
 class LjonFileSystemEventHandler(FileSystemEventHandler):
-    def __init__(self, root, public_path):
-        self.root = root
-        self.public_path = public_path
+    def __init__(self, ctx):
+        self.ctx = ctx
 
     def on_any_event(self, event):
         super().on_any_event(event)
 
-        if not event.src_path.startswith(self.public_path):
-            ljon.build(self.root)
+        if not event.src_path.startswith(self.ctx.public_path):
+            ljon.build(self.ctx.root)
 
 
-def watch(root, public_path):
-    event_handler = LjonFileSystemEventHandler(root, public_path)
+def watch(ctx):
+    event_handler = LjonFileSystemEventHandler(ctx)
 
     observer = Observer()
 
-    observer.schedule(event_handler, root, recursive=True)
+    observer.schedule(event_handler, ctx.root, recursive=True)
 
-    print('Watching \'{}\' for changes'.format(root))
+    print('Watching \'{}\' for changes'.format(ctx.root))
 
     observer.start()
 

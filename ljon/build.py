@@ -1,31 +1,17 @@
 import shutil
 import os
 from glob import glob
-import json
 import re
 
 import ljon.processors
 
 
-def build(root):
-    config = {'metadata': {}, 'ignore': [], 'processors': {}}
+def build(ctx):
+    if not os.path.isdir(ctx.public_path):
+        os.makedirs(ctx.public_path)
 
-    config_path = os.path.join(root, '.ljon/config.json')
-    public_path = os.path.join(root, 'public')
-    templates_path = os.path.join(root, '.ljon/templates')
-
-    try:
-        with open(config_path, 'r') as f:
-            config = json.load(f, strict=False)
-    except FileNotFoundError:
-        raise Exception("No configuration file found at '{}'".format(
-            config_path))
-
-    if not os.path.isdir(public_path):
-        os.makedirs(public_path)
-
-    for the_file in os.listdir(public_path):
-        file_path = os.path.join(public_path, the_file)
+    for the_file in os.listdir(ctx.public_path):
+        file_path = os.path.join(ctx.public_path, the_file)
         try:
             if os.path.isfile(file_path):
                 os.unlink(file_path)
@@ -38,7 +24,7 @@ def build(root):
     pathname = '*'
 
     while True:
-        files = glob(os.path.join(root, pathname))
+        files = glob(os.path.join(ctx.root, pathname))
 
         if len(files) == 0:
             break
@@ -49,7 +35,7 @@ def build(root):
     for path in content:
         ignore = False
 
-        for pattern in config['ignore']:
+        for pattern in ctx.config['ignore']:
             if re.match(pattern, path):
                 ignore = True
                 break
@@ -58,28 +44,29 @@ def build(root):
             continue
 
         if os.path.isdir(path):
-            os.makedirs(os.path.join(public_path, path), exist_ok=True)
+            os.makedirs(os.path.join(ctx.public_path, path), exist_ok=True)
             continue
 
         processed = False
 
-        for pattern in config['processors']:
+        for pattern in ctx.config['processors']:
             matched = re.match(pattern, path)
 
             if matched:
                 processed = True
 
-                if config['processors'][pattern]['processor'] == 'jinja':
+                if ctx.config['processors'][pattern]['processor'] == 'jinja':
                     ljon.processors.jinja(path,
-                                          os.path.join(public_path,
+                                          os.path.join(ctx.public_path,
                                                        matched.groups()[0]),
-                                          root,
-                                          templates_path,
-                                          config)
-                if config['processors'][pattern]['processor'] == 'shell':
-                    command = config['processors'][pattern]['command']
+                                          ctx.root,
+                                          ctx.templates_path,
+                                          ctx.config)
+                if ctx.config['processors'][pattern]['processor'] == 'shell':
+                    command = ctx.config['processors'][pattern]['command']
 
-                    ljon.processors.shell(command, path, root, public_path,
-                                          templates_path, config)
+                    ljon.processors.shell(command, path, ctx.root,
+                                          ctx.public_path, ctx.templates_path,
+                                          ctx.config)
         if not processed:
-            shutil.copy(path, os.path.join(public_path, path))
+            shutil.copy(path, os.path.join(ctx.public_path, path))
