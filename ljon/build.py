@@ -49,21 +49,22 @@ def build(root):
     for path in content:
         if os.path.isdir(path): continue
 
-        try:
-            extension = str(path.split('/')[-1]).split('.', maxsplit=1)[1]
-        except IndexError:
-            pass
         is_template, is_metadata = False, False
 
-        if extension.split('.')[-1] == 'j2':
-            is_template = True
-            real_extension = extension.split('.')[-2]
+        try:
+            extension = str(path.split('/')[-1]).split('.', maxsplit=1)[1]
 
-        if extension.split('.')[-1] == 'json' and \
-            extension.split('.')[-2] == 'j2' and \
-            len(extension.split('.')) >= 3:
-            is_metadata = True
+            if extension.split('.')[-1] == 'j2':
+                is_template = True
+                real_extension = extension.split('.')[-2]
 
+            if extension.split('.')[-1] == 'json' and \
+                extension.split('.')[-2] == 'j2' and \
+                len(extension.split('.')) >= 3:
+                is_metadata = True
+
+        except IndexError:
+            pass
         if '/' in path:
             directories = '/'.join(path.split('/')[:-1])
             os.makedirs(os.path.join(public_path, directories), exist_ok=True)
