@@ -6,7 +6,7 @@ import json
 import re
 
 
-def build(root='./'):
+def build(root):
     config = {'metadata': {}}
 
     config_path = os.path.join(root, '.ljon/config.json')
@@ -44,7 +44,7 @@ def build(root='./'):
         if os.path.isdir(path): continue
 
         try:
-            extension = path.split('/')[-1].split('.', maxsplit=1)[1]
+            extension = str(path.split('/')[-1]).split('.', maxsplit=1)[1]
         except IndexError:
             pass
         is_template, is_metadata = False, False

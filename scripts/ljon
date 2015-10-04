@@ -1,0 +1,23 @@
+#!/usr/bin/env/python
+
+"""
+usage:
+  ljon (-h | --help)
+  ljon <root>
+
+options:
+  -h --help         Get help
+  --root=<root>     Path to the project root [default: .]
+
+"""
+
+import os
+
+from docopt import docopt
+
+import ljon.build
+
+
+if __name__ == '__main__':
+    arguments = docopt(__doc__, version='ljon 0.0.1')
+    ljon.build(arguments['<root>'])

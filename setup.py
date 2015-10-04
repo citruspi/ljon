@@ -14,6 +14,9 @@ setup(
         'Operating System :: Unix',
         'Operating System :: MacOS :: MacOS X',
     ],
+    scripts=[
+        'scripts/ljon'
+    ],
     packages=['ljon'],
     zip_safe=False,
     include_package_date=True,
