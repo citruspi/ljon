@@ -20,12 +20,18 @@ def build(root):
         raise Exception("No configuration file found at '{}'".format(
             config_path))
 
-    try:
-        shutil.rmtree(public_path)
-    except FileNotFoundError:
-        pass
+    if not os.path.isdir(public_path):
+        os.makedirs(public_path)
 
-    os.makedirs(public_path)
+    for the_file in os.listdir(public_path):
+        file_path = os.path.join(public_path, the_file)
+        try:
+            if os.path.isfile(file_path):
+                os.unlink(file_path)
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)
+        except Exception as e:
+            raise e
 
     j2 = Environment(loader=FileSystemLoader([root, templates_path]))
 
