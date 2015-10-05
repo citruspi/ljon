@@ -68,5 +68,9 @@ def build(ctx):
                     ljon.processors.shell(command, path, ctx.root,
                                           ctx.public_path, ctx.templates_path,
                                           ctx.config)
+                if ctx.config['processors'][pattern]['processor'] == 'pillow':
+                    pipeline = ctx.config['processors'][pattern].get(
+                        'pipeline', [])
+                    ljon.processors.pillow(matched.groups()[0], pipeline, ctx)
         if not processed:
             shutil.copy(path, os.path.join(ctx.public_path, path))
