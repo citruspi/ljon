@@ -41,7 +41,7 @@ def build(root, server, host, port, watch):
         watch_thread.start()
 
     if server:
-        server = ljon.server.Server(host, port)
+        server = ljon.server.Server(host, port, ctx)
         server.start()
 
 

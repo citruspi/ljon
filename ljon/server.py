@@ -1,21 +1,18 @@
 import http.server
 import socketserver
-
-
-class LjonHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
-        self.path = './public/{}'.format(self.path)
-        super().do_GET()
+import os
 
 
 class Server(object):
-    def __init__(self, host, port):
+    def __init__(self, host, port, context):
         self.host = host
         self.port = port
+        self.context = context
 
     def start(self):
+        os.chdir(self.context.public_path)
         httpd = socketserver.TCPServer((self.host, self.port),
-                                       LjonHTTPRequestHandler)
+                                       http.server.SimpleHTTPRequestHandler)
 
         print('Running HTTP server on {host}:{port}'.format(host=self.host,
                                                             port=self.port))
