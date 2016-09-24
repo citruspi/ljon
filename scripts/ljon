@@ -1,4 +1,5 @@
 #!/usr/bin/env/python
+import glob
 import json
 import os
 from threading import Thread
@@ -35,6 +36,36 @@ def build(root, server, host, port, watch):
                 config = yaml.load(f)
         except FileNotFoundError:
             raise Exception('No configuration file found')
+
+    if 'metadata' not in config.keys():
+        config['metadata'] = {}
+
+    metadata_formats = [
+        ('.json', json),
+        ('.yaml', yaml)
+    ]
+
+    if os.path.isdir(os.path.join(root, '.ljon/metadata')):
+        metadata_sources = glob.glob(os.path.join(root, '.ljon/metadata/*.json'))
+        metadata_sources.extend(glob.glob(os.path.join(root, '.ljon/metadata/*.yaml')))
+
+        for source in metadata_sources:
+            name, ext = os.path.splitext(os.path.split(source)[1])
+
+            try:
+                with open(source, 'r') as f:
+                    loaded = False
+
+                    for metadata_format in metadata_formats:
+                        if ext == metadata_format[0]:
+                            config['metadata'][name] = metadata_format[1].load(f)
+                            loaded = True
+                            continue
+
+                    if not loaded:
+                        raise Exception('{ext} is not a valid metadata extension'.format(ext=ext))
+            except Exception as e:
+                raise Exception('Failed to read {source}: {message}'.format(source=source, message=str(e)))
 
     ctx = ljon.context.Context(root=root,
                   public_path=os.path.join(root, 'public'),
