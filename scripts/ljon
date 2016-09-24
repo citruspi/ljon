@@ -4,6 +4,7 @@ import os
 from threading import Thread
 
 import click
+import yaml
 
 import ljon.build
 import ljon.server
@@ -27,7 +28,13 @@ def build(root, server, host, port, watch):
         with open(config_path, 'r') as f:
             config = json.load(f)
     except FileNotFoundError:
-        raise Exception('No configuration file found')
+        try:
+            config_path = os.path.join(root, '.ljon/config.yaml')
+
+            with open(config_path, 'r') as f:
+                config = yaml.load(f)
+        except FileNotFoundError:
+            raise Exception('No configuration file found')
 
     ctx = ljon.context.Context(root=root,
                   public_path=os.path.join(root, 'public'),
