@@ -3,7 +3,7 @@ import json
 import subprocess
 from PIL import Image
 import os
-
+import yaml
 
 def jinja(path, intended_path, root, templates_path, config):
     j2 = Environment(loader=FileSystemLoader([root, templates_path]),
@@ -17,7 +17,11 @@ def jinja(path, intended_path, root, templates_path, config):
         with open('{}.json'.format(path)) as metadata_file:
             metadata.update(json.load(metadata_file))
     except FileNotFoundError:
-        pass
+        try:
+            with open('{}.yaml'.format(path)) as metadata_file:
+                metadata.update(yaml.load(metadata_file))
+        except FileNotFoundError:
+            pass
 
     rendered = template.render(**metadata)
 
