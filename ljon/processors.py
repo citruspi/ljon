@@ -7,7 +7,8 @@ import yaml
 
 def jinja(path, intended_path, root, templates_path, config):
     j2 = Environment(loader=FileSystemLoader([root, templates_path]),
-                     extensions=['jinja2_highlight.HighlightExtension'])
+                     extensions=['jinja2_highlight.HighlightExtension',
+                                 'jinja2.ext.do'])
 
     template = j2.get_template(path)
 
